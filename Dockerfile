@@ -74,4 +74,4 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN cargo install flamegraph
 
 # Define the entry point to use flamegraph with topos
-ENTRYPOINT ["flamegraph", "--", "topos"]
+ENTRYPOINT ["timeout", "300s", "flamegraph", "--", "topos"]
