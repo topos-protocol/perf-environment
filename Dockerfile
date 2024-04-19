@@ -35,12 +35,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Rust using rustup (the official Rust toolchain installer)
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
-
-# Install cargo-flamegraph
-RUN cargo install flamegraph
 
 # Fetch the latest release URL using GitHub's API and download the binary tarball
 RUN curl -s "https://api.github.com/repos/$GITHUB_REPO/releases/latest" \
@@ -61,9 +56,15 @@ ENV PATH="${PATH}:/usr/src/app"
 
 WORKDIR /usr/src/app
 
+# Install Rust using rustup (the official Rust toolchain installer)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# Install cargo-flamegraph
+RUN cargo install flamegraph
+
 # Copy the binary from the downloader stage
 COPY --from=downloader /usr/local/bin/topos-v0.1.0-rc.5-aarch64 ./topos
-COPY --from=downloader /usr/local/bin/flamegraph ./flamegraph
+COPY --from=downloader /usr/src/app/.cargo/bin/cargo-flamegraph ./flamegraph
 
 # Install runtime dependencies such as ca-certificates
 RUN apt-get update && apt-get install -y \
