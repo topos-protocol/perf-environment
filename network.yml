@@ -1,0 +1,5 @@
+version: "3.3"
+networks:
+  network-environment:
+    driver: bridge
+    name: network-environment

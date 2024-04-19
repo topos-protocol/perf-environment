@@ -1,0 +1,30 @@
+version: "3.3"
+
+services:
+  spammer:
+    image: ghcr.io/topos-protocol/topos:latest
+    container_name: spammer
+    privileged: true
+    volumes:
+      - ./perf_outputs:/usr/src/app
+    command:
+      - regtest
+      - spam
+      - --target-nodes=http://topos-node-1:1340,http://topos-node-2:1340,http://topos-node-3:1340,http://topos-node-4:1340
+    environment:
+      RUST_LOG: info
+      TOPOS_NETWORK_SPAMMER_BATCH_INTERVAL: "1000"
+      TOPOS_NETWORK_SPAMMER_NUMBER_OF_SUBNETS: "5"
+      TOPOS_NETWORK_SPAMMER_CERT_PER_BATCH: "20"
+      TOPOS_NETWORK_SPAMMER_NUMBER_OF_BATCHES: "120"
+    networks:
+      - network-environment
+    depends_on:
+      topos-node-1:
+        condition: service_healthy
+      topos-node-2:
+        condition: service_healthy
+      topos-node-3:
+        condition: service_healthy
+      topos-node-4:
+        condition: service_healthy
