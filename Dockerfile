@@ -18,24 +18,18 @@ RUN --mount=type=secret,id=aws,target=/root/.aws/credentials \
     cargo build --release --no-default-features --features=${FEATURES} \
     && sccache --show-stats
 
-# Define base image for downloading and extracting the binary
+# Fetch and install the binary in the downloader stage
 FROM ubuntu:20.04 AS downloader
 
-# Set the GitHub repository
-ARG GITHUB_REPO="topos-protocol/topos"
-# Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Install necessary tools: curl for downloading, jq for JSON processing
 RUN apt-get update && apt-get install -y \
-    cmake \
-    git \
     curl \
     jq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-ENV PATH="/root/.cargo/bin:${PATH}"
+# Set the GitHub repository
+ARG GITHUB_REPO="topos-protocol/topos"
 
 # Fetch the latest release URL using GitHub's API and download the binary tarball
 RUN curl -s "https://api.github.com/repos/$GITHUB_REPO/releases/latest" \
@@ -49,33 +43,35 @@ RUN tar -xzf app.tar.gz -C /usr/local/bin && rm app.tar.gz \
 # Define the final image
 FROM ubuntu:20.04 AS final
 
-ENV TCE_PORT=9090
-ENV USER=topos
-ENV UID=10001
-ENV PATH="${PATH}:/usr/src/app"
-
-WORKDIR /usr/src/app
-
-# Install Rust using rustup (the official Rust toolchain installer)
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-
-# Install cargo-flamegraph
-RUN cargo install flamegraph
-
-# Copy the binary from the downloader stage
-COPY --from=downloader /usr/local/bin/topos-v0.1.0-rc.5-aarch64 ./topos
-COPY --from=downloader /usr/src/app/.cargo/bin/cargo-flamegraph ./flamegraph
-
+ENV DEBIAN_FRONTEND=noninteractive
 # Install runtime dependencies such as ca-certificates
 RUN apt-get update && apt-get install -y \
-    ca-certificates \
     curl \
     jq \
+    git \
+    cmake \
+    build-essential \
+    linux-tools-common \
+    linux-tools-generic \
+    linux-tools-6.5.0-27-generic \
+    linux-cloud-tools-6.5.0-27-generic \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /tmp/node_config
-RUN mkdir /tmp/shared
+WORKDIR /usr/src/app
 
-# Define the entry point to use the script
-ENTRYPOINT ["flamegraph", "topos"]
+# Copy the binary from the downloader stage
+COPY --from=downloader /usr/local/bin/topos-v0.1.0-rc.5-aarch64 ./topos
+
+# Set necessary environment variables
+ENV TCE_PORT=9090
+ENV USER=topos
+ENV UID=10001
+
+# Setup cargo and Rust environment
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN cargo install flamegraph
+
+# Define the entry point to use flamegraph with topos
+ENTRYPOINT ["flamegraph", "--", "topos"]
