@@ -9,39 +9,17 @@ ARG SCCACHE_REGION
 ARG RUSTC_WRAPPER
 ARG PROTOC_VERSION=22.2
 
-WORKDIR /usr/src/app
-
 FROM --platform=${BUILDPLATFORM:-linux/amd64} base AS build
-COPY . .
+WORKDIR /usr/src/app
+RUN git clone https://github.com/topos-protocol/topos.git .
 RUN --mount=type=secret,id=aws,target=/root/.aws/credentials \
     --mount=type=cache,id=sccache,target=/root/.cache/sccache \
     cargo build --release --no-default-features --features=${FEATURES} \
     && sccache --show-stats
 
-# Fetch and install the binary in the downloader stage
-FROM ubuntu:22.04 AS downloader
-
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y \
-    curl \
-    jq \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set the GitHub repository
-ARG GITHUB_REPO="topos-protocol/topos"
-
-# Fetch the latest release URL using GitHub's API and download the binary tarball
-RUN curl -s "https://api.github.com/repos/$GITHUB_REPO/releases/latest" \
-    | jq -r '.assets[0].browser_download_url' \
-    | xargs curl -Lo app.tar.gz
-
-# Extract the binary to /usr/local/bin and clean up the tarball
-RUN tar -xzf app.tar.gz -C /usr/local/bin && rm app.tar.gz \
-    && chmod +x /usr/local/bin/topos-v0.1.0-rc.5-aarch64
 
 # Define the final image
-FROM ubuntu:22.04 AS final
+FROM ubuntu:22.04 AS topos
 
 ENV DEBIAN_FRONTEND=noninteractive
 # Install runtime dependencies such as ca-certificates
@@ -59,18 +37,16 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /usr/src/app
 
-# Copy the binary from the downloader stage
-COPY --from=downloader /usr/local/bin/topos-v0.1.0-rc.5-aarch64 ./topos
+# Copy the binary from the build stage
+COPY --from=build /usr/src/app/target/release/topos .
 
 # Set necessary environment variables
 ENV TCE_PORT=9090
 ENV USER=topos
 ENV UID=10001
 
-# Setup cargo and Rust environment
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
-RUN cargo install flamegraph
+RUN mkdir /tmp/node_config
+RUN mkdir /tmp/shared
 
 # Define the entry point to use flamegraph with topos
-ENTRYPOINT ["timeout", "300s", "flamegraph", "--", "topos"]
+ENTRYPOINT ["./topos"]

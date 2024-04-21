@@ -2,9 +2,6 @@ services:
   spammer:
     image: ghcr.io/topos-protocol/topos:latest
     container_name: spammer
-    privileged: true
-    volumes:
-      - ./perf_outputs:/usr/src/app
     command:
       - regtest
       - spam

@@ -61,6 +61,12 @@ services:
     container_name: topos-node-1
     init: true
     privileged: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+      - seccomp=seccomp-perf.json
+    read_only: true
     command:
       - "node"
       - "--edge-path"
@@ -73,7 +79,7 @@ services:
     healthcheck:
       test: |
         set -e
-        topos node status --node http://localhost:1340
+        ./topos node status --node http://localhost:1340
         /data/polygon-edge status | grep 'Current Block Number (base 10) = .[0-9]*'
       interval: 5s
       start_period: 1s
@@ -102,6 +108,12 @@ services:
     container_name: topos-node-2
     init: true
     privileged: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+      - seccomp=seccomp-perf.json
+    read_only: true
     command:
       - "node"
       - "--edge-path"
@@ -114,7 +126,7 @@ services:
     healthcheck:
       test: |
         set -e
-        topos node status --node http://localhost:1340
+        ./topos node status --node http://localhost:1340
         /data/polygon-edge status | grep 'Current Block Number (base 10) = .[0-9]*'
       interval: 5s
       start_period: 1s
@@ -144,6 +156,12 @@ services:
     container_name: topos-node-3
     init: true
     privileged: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+      - seccomp=seccomp-perf.json
+    read_only: true    
     command:
       - "node"
       - "--edge-path"
@@ -156,7 +174,7 @@ services:
     healthcheck:
       test: |
         set -e
-        topos node status --node http://localhost:1340
+        ./topos node status --node http://localhost:1340
         /data/polygon-edge status | grep 'Current Block Number (base 10) = .[0-9]*'
       interval: 5s
       start_period: 1s
@@ -186,6 +204,12 @@ services:
     container_name: topos-node-4
     init: true
     privileged: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+      - seccomp=seccomp-perf.json
+    read_only: true
     command:
       - "node"
       - "--edge-path"
@@ -198,7 +222,7 @@ services:
     healthcheck:
       test: |
         set -e
-        topos node status --node http://localhost:1340
+        ./topos node status --node http://localhost:1340
         /bin/sh /polygon_edge_healthcheck.sh /data
       interval: 5s
       start_period: 1s
