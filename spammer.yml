@@ -1,5 +1,3 @@
-version: "3.3"
-
 services:
   spammer:
     image: ghcr.io/topos-protocol/topos:latest

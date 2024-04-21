@@ -19,7 +19,7 @@ RUN --mount=type=secret,id=aws,target=/root/.aws/credentials \
     && sccache --show-stats
 
 # Fetch and install the binary in the downloader stage
-FROM ubuntu:20.04 AS downloader
+FROM ubuntu:22.04 AS downloader
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
@@ -41,7 +41,7 @@ RUN tar -xzf app.tar.gz -C /usr/local/bin && rm app.tar.gz \
     && chmod +x /usr/local/bin/topos-v0.1.0-rc.5-aarch64
 
 # Define the final image
-FROM ubuntu:20.04 AS final
+FROM ubuntu:22.04 AS final
 
 ENV DEBIAN_FRONTEND=noninteractive
 # Install runtime dependencies such as ca-certificates
@@ -53,8 +53,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     linux-tools-common \
     linux-tools-generic \
-    linux-tools-6.5.0-27-generic \
-    linux-cloud-tools-6.5.0-27-generic \
+    linux-tools-$(uname -r) \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
