@@ -8,14 +8,14 @@ PID=$(docker exec topos-node-1 pgrep topos)
 
 # Start perf monitoring
 echo "Starting perf monitoring..."
-docker exec -it topos-node-1 perf record -F 99 -g -p $PID -o /data/perf.data sleep 300
+docker exec -it topos-node-1 perf record -F 99 -g -p $PID -o /data/perf.data sleep 60
 
 # Generate a report
 echo "Saving perf.data..."
-docker exec -it topos-node-1 perf script -i /data/perf.data > ./perf_outputs/out.perf
+docker cp topos-node-1:/data/perf.data ./perf_outputs/perf.data
 
 # Stop the container
 docker compose down -v
 
-echo "Monitoring complete. Data saved to ./perf_outputs/out.perf"
+echo "Monitoring complete. Data saved to ./perf_outputs/perf.data"
 
