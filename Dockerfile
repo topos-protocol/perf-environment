@@ -14,7 +14,7 @@ WORKDIR /usr/src/app
 RUN git clone https://github.com/topos-protocol/topos.git .
 RUN --mount=type=secret,id=aws,target=/root/.aws/credentials \
     --mount=type=cache,id=sccache,target=/root/.cache/sccache \
-    cargo build --release --no-default-features --features=${FEATURES} \
+    cargo build --no-default-features --features=${FEATURES} \
     && sccache --show-stats
 
 
@@ -38,7 +38,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /usr/src/app
 
 # Copy the binary from the build stage
-COPY --from=build /usr/src/app/target/release/topos .
+COPY --from=build /usr/src/app/target/debug/topos .
 
 # Set necessary environment variables
 ENV TCE_PORT=9090
