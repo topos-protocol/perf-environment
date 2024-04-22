@@ -90,7 +90,6 @@ services:
     volumes:
       - topos-data:/data
       - ./node_config/node/topos-node-1/config.toml:/data/node/node-1/config.toml:ro
-      - ./flamegraph-output:/flamegraphs
     restart: on-failure
     ports:
       - "${TOPOS_HOST_PORT}:8545"
@@ -139,7 +138,6 @@ services:
     volumes:
       - topos-data:/data
       - ./node_config/node/topos-node-2/config.toml:/data/node/node-2/config.toml:ro
-      - ./flamegraph-output:/flamegraphs
     restart: on-failure
     ports:
       - "9090"
@@ -187,7 +185,6 @@ services:
     volumes:
       - topos-data:/data
       - ./node_config/node/topos-node-3/config.toml:/data/node/node-3/config.toml:ro
-      - ./flamegraph-output:/flamegraphs
     restart: on-failure
     ports:
       - "9090"
@@ -236,7 +233,6 @@ services:
       - topos-data:/data
       - ./node_config/node/topos-node-4/config.toml:/data/node/node-4/config.toml:ro
       - ./scripts/polygon_edge_healthcheck.sh:/polygon_edge_healthcheck.sh:ro
-      - ./flamegraph-output:/flamegraphs
     restart: on-failure
     ports:
       - "9090"
