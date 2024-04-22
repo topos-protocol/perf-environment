@@ -2,20 +2,11 @@ ARG RUSTUP_TOOLCHAIN=stable
 FROM --platform=${BUILDPLATFORM:-linux/amd64} ghcr.io/topos-protocol/rust_builder:bullseye-${RUSTUP_TOOLCHAIN} AS base
 
 ARG FEATURES
-# Rust cache
-ARG SCCACHE_S3_KEY_PREFIX
-ARG SCCACHE_BUCKET
-ARG SCCACHE_REGION
-ARG RUSTC_WRAPPER
-ARG PROTOC_VERSION=22.2
 
 FROM --platform=${BUILDPLATFORM:-linux/amd64} base AS build
 WORKDIR /usr/src/app
 RUN git clone https://github.com/topos-protocol/topos.git .
-RUN --mount=type=secret,id=aws,target=/root/.aws/credentials \
-    --mount=type=cache,id=sccache,target=/root/.cache/sccache \
-    cargo build --no-default-features --features=${FEATURES} \
-    && sccache --show-stats
+RUN cargo build --no-default-features --features=${FEATURES}
 
 
 # Define the final image

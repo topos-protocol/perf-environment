@@ -8,7 +8,7 @@ PID=$(docker exec topos-node-1 pgrep topos)
 
 # Start perf monitoring
 echo "Starting perf monitoring..."
-docker exec -it topos-node-1 perf record -F 99 -g -p $PID -o /data/perf.data sleep 300
+docker exec -it topos-node-1 perf record -F 99 --call-graph dwarf -g -p $PID -o /data/perf.data sleep 300
 
 # Generate a report
 echo "Saving perf.data to local project folder..."
