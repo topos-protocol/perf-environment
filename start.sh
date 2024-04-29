@@ -1,41 +1,31 @@
 #!/bin/bash
 
-# Define local directories for output
-local_debug_dir="$HOME/.debug"
-local_data_dir="./perf-data"
+# Define local directory for output and the name of the output file
+local_project_dir="./perf-data"  # Update this path to your actual project directory
+output_file="data.perf"
 
-# Name of the file to be copied
-file_name="perf.data.old"
+# Ensure the local directory exists
+mkdir -p "$local_project_dir"
 
-# Ensure the local directories exist
-mkdir -p "$local_debug_dir"
-mkdir -p "$local_data_dir"
-
-# Start up docker-compose services
-echo "Starting Docker Compose services..."
+# Start up docker-compose services and suppress output
+echo "Docker Compose starting..."
 docker compose up -d > /dev/null 2>&1
 
 # Allow services to run for 70 seconds
 echo "Waiting for 200 seconds..."
 sleep 200s
 
-# Copy /root/.debug from topos-node-1 container to local ~/.debug directory
-echo "Copying /root/.debug from topos-node-1 to local ~/.debug directory..."
-docker cp topos-node-1:/root/.debug "$local_debug_dir"
+# Navigate to /data in topos-node-1 and run perf script
+echo "Running perf script inside topos-node-1..."
+docker exec topos-node-1 bash -c "cd /data && perf script -i perf.data.old > $output_file"
 
-# Copy perf.data from the perf_topos-data volume to the local data directory
-echo "Copying perf.data from perf_topos-data volume to local $local_data_dir..."
-docker run --rm -v perf_topos-data:/data -v "$local_data_dir":/backup ubuntu \
-    bash -c "cp -ar /data/$file_name /backup/"
+# Copy data.perf from topos-node-1 to local project folder
+echo "Copying $output_file from topos-node-1 to local project folder..."
+docker cp topos-node-1:/data/$output_file "$local_project_dir/$output_file"
 
-# Change ownership of the copied files to the local user
-echo "Changing ownership of the copied files to the local user..."
-sudo chown -R $(id -u):$(id -g) "$local_debug_dir"
-sudo chown -R $(id -u):$(id -g) "$local_data_dir/$file_name"
-
-# Stop and remove docker-compose services
-echo "Stopping Docker Compose services..."
-docker compose down -v > /dev/null 2>&1
+# Stop and remove docker-compose services and suppress output
+echo "Docker Compose stopping..."
+docker compose down > /dev/null 2>&1
 
 echo "Operations completed."
 
