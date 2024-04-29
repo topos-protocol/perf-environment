@@ -38,7 +38,7 @@ The issue is that sometimes the `perf` command will crash the docker container w
 
 ### Evaluate the data
 
-The script is saving the `perf.data` into the folder `perf_outputs` inside the project directory. From there, you can digest the data.
+The script is saving the `perf.data` into the folder `perf-data` inside the project directory. From there, you can digest the data.
 
 One example: https://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html
 
