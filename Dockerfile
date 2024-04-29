@@ -34,6 +34,8 @@ RUN git clone https://github.com/topos-protocol/topos.git . \
     && git fetch origin pull/493/head:PR-branch \
     && git checkout PR-branch
 
+ENV RUSTFLAGS="-C force-frame-pointers=yes symbol-mangling-version=v0"
+
 # Build the application including debug symbols
 RUN cargo build --release
 
