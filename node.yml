@@ -87,7 +87,6 @@ services:
       topos-init:
         condition: service_completed_successfully
     volumes:
-      - ./perf-outputs:/data/
       - topos-data:/data
       - ./node_config/node/topos-node-1/config.toml:/data/node/node-1/config.toml:ro
     restart: on-failure

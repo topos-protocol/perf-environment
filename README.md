@@ -12,15 +12,24 @@ We start a local docker compose environment with 4 validators and 1 spammer. The
 
 * `git clone git@github.com:topos-protocol/perf-environment.git`
 * `cd perf-environment`
-* `docker compose up -d`
+* `./start.sh`
 
-The `entrypoint.sh` will start the `perf` command for `topos-node-1`, and stop after 1 minute of recording the data. Afterwards, we need to extract both the debug symbols and the `perf.data` from the container to analyse it outside of docker.
+
+### Behind the scenes
+
+The `entrypoint.sh` will start the `perf` command for `topos-node-1`, and stop after 3 minutes of recording the data. Afterwards, the script is copying the created `perf.data` file and the debug symbols to the local hard drive: 
 
 * `docker cp topos-node-1:/root/.debug ~/`
-* `docker cp topos-node-1:/data/perf.data .`
-* `perf report`
+* `docker cp topos-node-1:/data/perf.data.old ./perf-data`
+
 
 **It could be that the docker container is restarting due to resource issues. Then insted of copying `perf.data`, we need to copy `.perf.data.old`**
+
+The issue is that sometimes the `perf` command will crash the docker container when finishing the report, resulting in a restart, and a `perf.data.old` file. Therefore we almost expect this to happen and copy the `.old` file to the local folder structure. This part of the setup is flaky and you might want to get into the container and observe:
+
+* `docker exec -ti topos-node-1 /bin/bash`
+* `cd /data`
+
 
 ### Create a profile for Firefox Profiler
 
