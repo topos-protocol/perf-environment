@@ -61,12 +61,11 @@ services:
     container_name: topos-node-1
     init: true
     privileged: true
-    cap_drop:
-      - ALL
+    cap_add:
+      - SYS_ADMIN
     security_opt:
       - no-new-privileges
       - seccomp=seccomp-perf.json
-    read_only: true
     command:
       - "node"
       - "--edge-path"
@@ -79,7 +78,7 @@ services:
     healthcheck:
       test: |
         set -e
-        ./topos node status --node http://localhost:1340
+        ./target/release/topos node status --node http://localhost:1340
         /data/polygon-edge status | grep 'Current Block Number (base 10) = .[0-9]*'
       interval: 5s
       start_period: 1s
@@ -88,6 +87,7 @@ services:
       topos-init:
         condition: service_completed_successfully
     volumes:
+      - ./perf-outputs:/data/
       - topos-data:/data
       - ./node_config/node/topos-node-1/config.toml:/data/node/node-1/config.toml:ro
     restart: on-failure
@@ -99,6 +99,7 @@ services:
       - "4030:4030"
     environment:
       - RUST_LOG=topos=debug,topos_tce_storage=debug,topos_tce_synchronizer=debug
+      - PROFILING=true  
     networks:
       - network-environment
 
@@ -112,7 +113,6 @@ services:
     security_opt:
       - no-new-privileges
       - seccomp=seccomp-perf.json
-    read_only: true
     command:
       - "node"
       - "--edge-path"
@@ -125,7 +125,7 @@ services:
     healthcheck:
       test: |
         set -e
-        ./topos node status --node http://localhost:1340
+        ./target/release/topos node status --node http://localhost:1340
         /data/polygon-edge status | grep 'Current Block Number (base 10) = .[0-9]*'
       interval: 5s
       start_period: 1s
@@ -159,7 +159,6 @@ services:
     security_opt:
       - no-new-privileges
       - seccomp=seccomp-perf.json
-    read_only: true    
     command:
       - "node"
       - "--edge-path"
@@ -172,7 +171,7 @@ services:
     healthcheck:
       test: |
         set -e
-        ./topos node status --node http://localhost:1340
+        ./target/release/topos node status --node http://localhost:1340
         /data/polygon-edge status | grep 'Current Block Number (base 10) = .[0-9]*'
       interval: 5s
       start_period: 1s
@@ -206,7 +205,6 @@ services:
     security_opt:
       - no-new-privileges
       - seccomp=seccomp-perf.json
-    read_only: true
     command:
       - "node"
       - "--edge-path"
@@ -219,7 +217,7 @@ services:
     healthcheck:
       test: |
         set -e
-        ./topos node status --node http://localhost:1340
+        ./target/release/topos node status --node http://localhost:1340
         /bin/sh /polygon_edge_healthcheck.sh /data
       interval: 5s
       start_period: 1s

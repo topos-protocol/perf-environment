@@ -1,24 +1,18 @@
-ARG RUSTUP_TOOLCHAIN=stable
-FROM --platform=${BUILDPLATFORM:-linux/amd64} ghcr.io/topos-protocol/rust_builder:bullseye-${RUSTUP_TOOLCHAIN} AS base
+# Setup runtime environment
+FROM ubuntu:22.04
 
-ARG FEATURES
-
-FROM --platform=${BUILDPLATFORM:-linux/amd64} base AS build
-WORKDIR /usr/src/app
-RUN git clone https://github.com/topos-protocol/topos.git .
-RUN cargo build --no-default-features --features=${FEATURES}
-
-
-# Define the final image
-FROM ubuntu:22.04 AS topos
-
-ENV DEBIAN_FRONTEND=noninteractive
-# Install runtime dependencies such as ca-certificates
+# Install necessary packages including perf
 RUN apt-get update && apt-get install -y \
     curl \
     jq \
     git \
     cmake \
+    clang \
+    lld \
+    libssl-dev \
+    pkg-config \
+    libc6-dev \
+    protobuf-compiler \
     build-essential \
     linux-tools-common \
     linux-tools-generic \
@@ -28,16 +22,30 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /usr/src/app
 
-# Copy the binary from the build stage
-COPY --from=build /usr/src/app/target/debug/topos .
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 
-# Set necessary environment variables
+RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
+
+# Ensure Cargo is in PATH for subsequent commands
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Clone the repository and checkout the specific PR branch
+RUN git clone https://github.com/topos-protocol/topos.git . \
+    && git fetch origin pull/493/head:PR-branch \
+    && git checkout PR-branch
+
+# Build the application including debug symbols
+RUN cargo build --release
+
 ENV TCE_PORT=9090
 ENV USER=topos
 ENV UID=10001
 
-RUN mkdir /tmp/node_config
-RUN mkdir /tmp/shared
+# Set up directories used by the application and for perf data
+RUN mkdir /tmp/node_config /tmp/shared 
 
-# Define the entry point to use flamegraph with topos
-ENTRYPOINT ["./topos"]
+# Define a script as the entry point to run perf
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+

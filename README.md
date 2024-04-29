@@ -8,11 +8,24 @@
 
 ### HowTo
 
-The script `perf.sh` will start a docker compose environment with 4 validators and 1 spammer. The arguments of the spammer can be adjusted in the compose file `spammer.yml`. 
+We start a local docker compose environment with 4 validators and 1 spammer. The arguments of the spammer can be adjusted in the compose file `spammer.yml`. 
 
 * `git clone git@github.com:topos-protocol/perf-environment.git`
 * `cd perf-environment`
-* `./perf.sh`
+* `docker compose up -d`
+
+The `entrypoint.sh` will start the `perf` command for `topos-node-1`, and stop after 1 minute of recording the data. Afterwards, we need to extract both the debug symbols and the `perf.data` from the container to analyse it outside of docker.
+
+* `docker cp topos-node-1:/root/.debug ~/`
+* `docker cp topos-node-1:/data/perf.data .`
+* `perf report`
+
+**It could be that the docker container is restarting due to resource issues. Then insted of copying `perf.data`, we need to copy `.perf.data.old`**
+
+### Create a profile for Firefox Profiler
+
+* `perf script > data.perf` 
+
 
 ### Evaluate the data
 
