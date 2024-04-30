@@ -17,39 +17,8 @@ We start a local docker compose environment with 4 validators and 1 spammer. The
 
 ### Behind the scenes
 
-The `entrypoint.sh` will start the `perf` command for `topos-node-1`, and stop after 3 minutes of recording the data. Afterwards, the script is copying the created `perf.data` file and the debug symbols to the local hard drive: 
+The `start.sh` is starting `docker compose up`, which in turn builds the `Dockerfile`, which downloads either the latest `main` or a `PR` from the `topos` repository, and builds it via debugging `RUSTFLAGS`. After building the container, it starts 4 `topos` nodes, and one `spammer`. The `topos` nodes are being started via the `entrypoint.sh` script, which starts the `perf` command for `topos-node-1`. After 3 minutes, we create a Profiler Report out of the recorded data, and save it to the local `perf-outputs` folder. This `data.perf` can be viewed via Firefox Profiler.
 
-* `docker cp topos-node-1:/root/.debug ~/`
-* `docker cp topos-node-1:/data/perf.data.old ./perf-data`
-
-
-**It could be that the docker container is restarting due to resource issues. Then insted of copying `perf.data`, we need to copy `.perf.data.old`**
-
-The issue is that sometimes the `perf` command will crash the docker container when finishing the report, resulting in a restart, and a `perf.data.old` file. Therefore we almost expect this to happen and copy the `.old` file to the local folder structure. This part of the setup is flaky and you might want to get into the container and observe:
-
-* `docker exec -ti topos-node-1 /bin/bash`
-* `cd /data`
-
-
-### Create a profile for Firefox Profiler
-
-* `perf script > data.perf` 
-
-
-### Evaluate the data
-
-The script is saving the `perf.data` into the folder `perf-data` inside the project directory. From there, you can digest the data.
-
-One example: https://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html
-
-For this, you have to have the [`FlameGraph` repository](https://github.com/brendangregg/FlameGraph) locally and use the `stackcollapse-perf.pl` and `flamegraph.pl` script included.
-
-```bash
-perf script | ./stackcollapse-perf.pl > out.perf-folded
-./flamegraph.pl out.perf-folded > perf.svg
-firefox perf.svg  # or chrome, etc.
-
-```
 
 ## License
 
