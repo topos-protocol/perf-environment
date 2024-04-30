@@ -17,7 +17,7 @@ sleep 200s
 
 # Navigate to /data in topos-node-1 and run perf script
 echo "Running perf script inside topos-node-1..."
-docker exec topos-node-1 bash -c "cd /data && perf script -i perf.data.old > $output_file"
+docker exec topos-node-1 bash -c "cd /data && perf script > $output_file"
 
 # Copy data.perf from topos-node-1 to local project folder
 echo "Copying $output_file from topos-node-1 to local project folder..."

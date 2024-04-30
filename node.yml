@@ -83,13 +83,13 @@ services:
       interval: 5s
       start_period: 1s
       retries: 10
+    restart: on-failure
     depends_on:
       topos-init:
         condition: service_completed_successfully
     volumes:
       - topos-data:/data
       - ./node_config/node/topos-node-1/config.toml:/data/node/node-1/config.toml:ro
-    restart: on-failure
     ports:
       - "${TOPOS_HOST_PORT}:8545"
       - "9090"
@@ -129,6 +129,7 @@ services:
       interval: 5s
       start_period: 1s
       retries: 10
+    restart: on-failure
     depends_on:
       topos-init:
         condition: service_completed_successfully
@@ -137,7 +138,6 @@ services:
     volumes:
       - topos-data:/data
       - ./node_config/node/topos-node-2/config.toml:/data/node/node-2/config.toml:ro
-    restart: on-failure
     ports:
       - "9090"
       - "1340"
@@ -175,6 +175,7 @@ services:
       interval: 5s
       start_period: 1s
       retries: 10
+    restart: on-failure
     depends_on:
       topos-init:
         condition: service_completed_successfully
@@ -183,7 +184,6 @@ services:
     volumes:
       - topos-data:/data
       - ./node_config/node/topos-node-3/config.toml:/data/node/node-3/config.toml:ro
-    restart: on-failure
     ports:
       - "9090"
       - "1340"
@@ -221,6 +221,7 @@ services:
       interval: 5s
       start_period: 1s
       retries: 10
+    restart: on-failure
     depends_on:
       topos-init:
         condition: service_completed_successfully
@@ -230,7 +231,6 @@ services:
       - topos-data:/data
       - ./node_config/node/topos-node-4/config.toml:/data/node/node-4/config.toml:ro
       - ./scripts/polygon_edge_healthcheck.sh:/polygon_edge_healthcheck.sh:ro
-    restart: on-failure
     ports:
       - "9090"
       - "1340"
